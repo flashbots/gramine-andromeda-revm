@@ -1,6 +1,6 @@
 FROM gramineproject/gramine:v1.5
 
-RUN apt-get update && apt-get install -y jq build-essential
+RUN apt-get update && apt-get install -y jq build-essential libclang-dev
 
 WORKDIR /workdir
 

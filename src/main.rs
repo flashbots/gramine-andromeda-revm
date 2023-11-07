@@ -1,6 +1,5 @@
-use alloy_primitives::{Address, U256};
 use revm::{
-    primitives::{AccountInfo, TxEnv, B160},
+    primitives::{address, AccountInfo, TxEnv, Address, U256},
     InMemoryDB, EVM,
 };
 
@@ -8,6 +7,9 @@ use std::{fs::File, io::Write, path::Path, fs};
 
 // This payload should be generalized to include all the pre-state for each
 // simulation.
+
+
+
 #[derive(serde::Deserialize)]
 struct Payload {
     sender: Address,
@@ -52,7 +54,7 @@ fn simulate(payload: Payload) -> eyre::Result<()> {
 
     let balance = U256::from(111);
     // this is a random address
-    let address = "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97".parse()?;
+    let addr = address!("4838b106fce9647bdf1e7877bf73ce8b0bad5f97");
     let info = AccountInfo {
         balance,
         ..Default::default()
@@ -60,7 +62,7 @@ fn simulate(payload: Payload) -> eyre::Result<()> {
 
     // Populate the DB pre-state,
     // TODO: Make this data witnessed via merkle patricia proofs.
-    db.insert_account_info(address, info);
+    db.insert_account_info(addr, info);
     // For storage insertions:
     // db.insert_account_storage(address, slot, value)
 
@@ -72,8 +74,8 @@ fn simulate(payload: Payload) -> eyre::Result<()> {
     evm.database(db);
 
     evm.env.tx = TxEnv {
-        caller: address,
-        transact_to: revm::primitives::TransactTo::Call(B160::from(receiver.0 .0)),
+        caller: addr,
+        transact_to: revm::primitives::TransactTo::Call(receiver),
         value,
         ..Default::default()
     };
@@ -81,7 +83,7 @@ fn simulate(payload: Payload) -> eyre::Result<()> {
     let result = evm.transact_ref()?;
 
     assert_eq!(
-        result.state.get(&address).unwrap().info.balance,
+        result.state.get(&addr).unwrap().info.balance,
         U256::from(69)
     );
 
