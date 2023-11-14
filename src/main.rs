@@ -21,28 +21,6 @@ fn main() -> eyre::Result<()> {
     let data: Payload = serde_json::from_reader(File::open("/var/sgx-revm-data/input")?)?;
 
     simulate(data)?;
-
-    // Attestation available    
-    if Path::new("/dev/attestation/quote").exists() {
-        /*  TODO: make the user data include a meaningful statement
-            For example, it could include the hash of the block and the transaction 
-            being evaluated.
-         */
-        
-        // Write some user report data
-        let mut f = File::create("/dev/attestation/user_report_data")?;
-        f.write_all(&b"\xde\xad\xbe\xef".repeat(32))?;
-        drop(f);
-       
-        // Get the extracted attestation quote
-        let quote = fs::read("/dev/attestation/quote")?;
-
-        // Copy the attestation quote to our output directory
-        fs::write("/var/sgx-revm-data/quote", &quote)?;
-    } else {
-        //Not found
-        panic!("/dev/attestation/quote not found - is this in running in gramine with ra_type set?");
-    };
     
     Ok(())
 }

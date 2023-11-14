@@ -18,7 +18,7 @@ ENV RA_CLIENT_LINKABLE=1
 # Build just the dependencies (shorcut)
 COPY Cargo.lock Cargo.toml ./
 RUN mkdir src && touch src/lib.rs
-RUN cargo build --release
+RUN --mount=type=ssh  cargo build --release
 RUN rm src/lib.rs
 
 # Now add our actual source
