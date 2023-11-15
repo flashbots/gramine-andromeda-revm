@@ -12,3 +12,6 @@ revm = { git = "ssh://git@github.com/flashbots/revm-andromeda.git", branch = "at
 eyre = "0.6.8"
 serde = { version = "1.0.188", features = ["derive"] }
 serde_json = "1.0.105"
+
+ethers-core = { version = "2.0" }
+ethers-contract = { version = "2.0.10", default-features = false }

@@ -35,10 +35,7 @@ sgx.trusted_files = [
   "file:{{ arch_libdir }}/",
 ]
 
-sgx.allowed_files = [
-  "file:data/input",
-  "file:data/quote",
-  "file:data/output",
-]
+#sgx.allowed_files = [
+#]
 
 sgx.max_threads = 2
