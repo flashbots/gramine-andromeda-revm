@@ -4,8 +4,8 @@ use revm::{
 };
 
 use ethers_contract::{BaseContract, Lazy};
-use ethers_core::abi::{parse_abi};
-use std::{fs::File, io::Write, path::Path, fs};
+use ethers_core::abi::{parse_abi,Token,ethabi};
+use std::{fs::File, io::Write, path::Path, fs, include_str};
 use std::str::FromStr;
 
 
@@ -16,46 +16,94 @@ fn main() -> eyre::Result<()> {
 }
 
 pub static ANDROMEDA_CODE: Lazy<Bytes> = Lazy::new(|| {
-    "608060405260043610610054575f3560e01c8063043d5df31461005857806340ea9f3014610076578063622753a5146100a0578063c828d433146100ca578063cb4d5c59146100f4578063fffd0e561461011e575b5f80fd5b610060610148565b60405161006d919061028b565b60405180910390f35b348015610081575f80fd5b5061008a6101da565b604051610097919061032e565b60405180910390f35b3480156100ab575f80fd5b506100b4610257565b6040516100c1919061038d565b60405180910390f35b3480156100d5575f80fd5b506100de61025e565b6040516100eb919061038d565b60405180910390f35b3480156100ff575f80fd5b50610108610265565b604051610115919061038d565b60405180910390f35b348015610129575f80fd5b5061013261026c565b60405161013f919061038d565b60405180910390f35b5f805f6204070373ffffffffffffffffffffffffffffffffffffffff16604051610171906103d3565b5f60405180830381855afa9150503d805f81146101a9576040519150601f19603f3d011682016040523d82523d5f602084013e6101ae565b606091505b5091509150816101bc575f80fd5b60208151146101c9575f80fd5b806101d390610416565b9250505090565b60605f806204070073ffffffffffffffffffffffffffffffffffffffff16604051610204906103d3565b5f60405180830381855afa9150503d805f811461023c576040519150601f19603f3d011682016040523d82523d5f602084013e610241565b606091505b50915091508161024f575f80fd5b809250505090565b6204070181565b6204070381565b6204070081565b6204070281565b5f819050919050565b61028581610273565b82525050565b5f60208201905061029e5f83018461027c565b92915050565b5f81519050919050565b5f82825260208201905092915050565b5f5b838110156102db5780820151818401526020810190506102c0565b5f8484015250505050565b5f601f19601f8301169050919050565b5f610300826102a4565b61030a81856102ae565b935061031a8185602086016102be565b610323816102e6565b840191505092915050565b5f6020820190508181035f83015261034681846102f6565b905092915050565b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6103778261034e565b9050919050565b6103878161036d565b82525050565b5f6020820190506103a05f83018461037e565b92915050565b5f81905092915050565b50565b5f6103be5f836103a6565b91506103c9826103b0565b5f82019050919050565b5f6103dd826103b3565b9150819050919050565b5f819050602082019050919050565b5f6104018251610273565b80915050919050565b5f82821b905092915050565b5f610420826102a4565b8261042a846103e7565b9050610435816103f6565b92506020821015610475576104707fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8360200360080261040a565b831692505b505091905056fea264697066735822122050f04eddac5bfa02c6bda01cc3e897259a7c5653c6dfa198954f61dc42d505cd64736f6c63430008170033"
+    include_str!("examples_Andromeda_sol_Andromeda.bin")
 	.parse().unwrap()});
+
+pub static addrA : Address = address!("4838b106fce9647bdf1e7877bf73ce8b0bad5f97");    
+pub static addrB : Address = address!("F2d01Ee818509a9540d8324a5bA52329af27D19E");
+
+fn get_code() -> eyre::Result<Bytes> {
+    // This is gross, but I'm trying to remove the "constructor" from the bytecode
+    // generated from solc
+    let mut db = InMemoryDB::default();    
+    let mut evm = EVM::new();
+    let info = AccountInfo {
+	code: Some(Bytecode::new_raw((*ANDROMEDA_CODE.0).into())),
+        ..Default::default()
+    };
+    db.insert_account_info(addrB, info);
+    evm.database(db);
+    evm.env.tx = TxEnv {
+        caller: addrA,
+        transact_to: revm::primitives::TransactTo::Call(addrB),
+	data: revm::primitives::Bytes::from(ANDROMEDA_CODE.0.clone()),
+        ..Default::default()
+    };
+    let result = evm.transact_ref()?;
+    //dbg!(&result);
+    match result.result.output() {
+	Some(o) => Ok(o.clone()),
+	_ => {todo!()}
+    }
+}
 
 fn simulate() -> eyre::Result<()> {
     let mut db = InMemoryDB::default();
 
-    // Populate the DB pre-state,
-    let addrA = address!("4838b106fce9647bdf1e7877bf73ce8b0bad5f97");    
-    let addrB = address!("F2d01Ee818509a9540d8324a5bA52329af27D19E");
-    {
-	let info = AccountInfo {
-	    code: Some(Bytecode::new_raw((*ANDROMEDA_CODE.0).into())),
-            ..Default::default()
-	};
-	db.insert_account_info(addrB, info);
-    }
-
-    // Setup the EVM with the configured DB
-    // The EVM will ONLY be able to access the witnessed state, and
-    // any simulation that tries to use state outside of the provided data
-    // will fail.
+    let code = get_code()?;
     let mut evm = EVM::new();
+    let info = AccountInfo {
+	code: Some(Bytecode::new_raw(code)),
+        ..Default::default()
+    };
+    db.insert_account_info(addrB, info);
     evm.database(db);
 
     let abi = BaseContract::from(parse_abi(&[
         "function localRandom() public returns (bytes32)",
+        "function attestSgx(bytes) public returns (bytes)",
     ])?);
-    let calldata = abi.encode("localRandom", ())?;
 
-    evm.env.tx = TxEnv {
-        caller: addrA,
-        transact_to: revm::primitives::TransactTo::Call(addrB),
-	data: revm::primitives::Bytes::from(calldata.0.clone()),
-        ..Default::default()
-    };
+    //////////////////////////
+    // Suave.localRandom()
+    //////////////////////////
+    {
+	let calldata = abi.encode("localRandom", ())?;
+	evm.env.tx = TxEnv {
+            caller: addrA,
+            transact_to: revm::primitives::TransactTo::Call(addrB),
+	    data: revm::primitives::Bytes::from(calldata.0),
+            ..Default::default()
+	};
+	let result = evm.transact_ref()?;
+	dbg!(&result.result.output());
+    }
 
-    let result = evm.transact_ref()?;
-    let outp1 = result.result.output().unwrap();
-    //let (out,) : (u256,) = abi.decode_output("localRandom", outp1)?;
-    dbg!(outp1);
+    //////////////////////////
+    // Suave.attestSgx("hello")
+    //////////////////////////
+    {
+	let calldata = abi.encode("attestSgx", (Token::Bytes("hello".as_bytes().to_vec()),))?;
+	evm.env.tx = TxEnv {
+            caller: addrA,
+            transact_to: revm::primitives::TransactTo::Call(addrB),
+	    data: revm::primitives::Bytes::from(calldata.0),
+            ..Default::default()
+	};
+	let result = evm.transact_ref()?;
+	
+	// FIXME: why doesn't this work? the workaround is fine
+	//let decoded_output = abi.decode_output("attestSgx", &result.result.output().unwrap())?;
+	//dbg!(decoded_output);
+	
+	let decoded = ethabi::decode(&[ethabi::ParamType::Bytes], result.result.output().unwrap())?;
+	let quote = match &decoded[0] {
+	    Token::Bytes(b) => b,
+	    _ => todo!()
+	};
+	let hex : String = quote.iter().map(|byte| format!("{:02x}", byte)).collect();
+	dbg!(hex);
+    }
 
     Ok(())
 }
