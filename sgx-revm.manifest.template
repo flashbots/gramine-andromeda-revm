@@ -17,7 +17,7 @@ fs.mounts = [
   { path = "{{ arch_libdir }}", uri = "file:{{ arch_libdir }}" },
 
   # For providing input through trusted or host-provided input files
-  { path = "/var/sgx-revm-data/", uri = "file:data" },
+  # { path = "/var/sgx-revm-data/", uri = "file:data" },
 ]
 
 sgx.debug = false

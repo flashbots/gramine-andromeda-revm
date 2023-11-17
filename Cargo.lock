@@ -1471,7 +1471,7 @@ checksum = "c08c74e62047bb2de4ff487b251e4a92e24f48745648451635cec7d591162d9f"
 [[package]]
 name = "revm"
 version = "3.5.0"
-source = "git+ssh://git@github.com/flashbots/revm-andromeda.git?branch=attest#ab0f85b17c21cd4a2100eaf22e3b7b0b1211dbc4"
+source = "git+ssh://git@github.com/flashbots/revm-andromeda.git?branch=attest#96dd6ea16aabe360501e2689761abe3730fdbf69"
 dependencies = [
  "auto_impl",
  "eyre",
@@ -1484,7 +1484,7 @@ dependencies = [
 [[package]]
 name = "revm-interpreter"
 version = "1.3.0"
-source = "git+ssh://git@github.com/flashbots/revm-andromeda.git?branch=attest#ab0f85b17c21cd4a2100eaf22e3b7b0b1211dbc4"
+source = "git+ssh://git@github.com/flashbots/revm-andromeda.git?branch=attest#96dd6ea16aabe360501e2689761abe3730fdbf69"
 dependencies = [
  "revm-primitives",
  "serde",
@@ -1493,12 +1493,13 @@ dependencies = [
 [[package]]
 name = "revm-precompile"
 version = "2.2.0"
-source = "git+ssh://git@github.com/flashbots/revm-andromeda.git?branch=attest#ab0f85b17c21cd4a2100eaf22e3b7b0b1211dbc4"
+source = "git+ssh://git@github.com/flashbots/revm-andromeda.git?branch=attest#96dd6ea16aabe360501e2689761abe3730fdbf69"
 dependencies = [
  "aurora-engine-modexp",
  "c-kzg",
  "ethers-core",
  "k256",
+ "lazy_static",
  "once_cell",
  "revm-primitives",
  "ripemd",
@@ -1510,7 +1511,7 @@ dependencies = [
 [[package]]
 name = "revm-primitives"
 version = "1.3.0"
-source = "git+ssh://git@github.com/flashbots/revm-andromeda.git?branch=attest#ab0f85b17c21cd4a2100eaf22e3b7b0b1211dbc4"
+source = "git+ssh://git@github.com/flashbots/revm-andromeda.git?branch=attest#96dd6ea16aabe360501e2689761abe3730fdbf69"
 dependencies = [
  "alloy-primitives",
  "alloy-rlp",

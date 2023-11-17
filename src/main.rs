@@ -9,6 +9,7 @@ use std::{fs::File, io::Write, path::Path, fs, include_str};
 use std::str::FromStr;
 
 
+
 fn main() -> eyre::Result<()> {
     // Read from the untrusted host via a Gramine-mapped file
     simulate()?;
@@ -60,8 +61,10 @@ fn simulate() -> eyre::Result<()> {
     evm.database(db);
 
     let abi = BaseContract::from(parse_abi(&[
-        "function localRandom() public returns (bytes32)",
-        "function attestSgx(bytes) public returns (bytes)",
+        "function localRandom() returns (bytes32)",
+        "function attestSgx(bytes) returns (bytes)",
+        "function volatileSet(bytes32,bytes32)",
+        "function volatileGet(bytes32) returns (bytes32)",
     ])?);
 
     //////////////////////////
@@ -85,17 +88,11 @@ fn simulate() -> eyre::Result<()> {
     {
 	let calldata = abi.encode("attestSgx", (Token::Bytes("hello".as_bytes().to_vec()),))?;
 	evm.env.tx = TxEnv {
-            caller: addrA,
             transact_to: revm::primitives::TransactTo::Call(addrB),
 	    data: revm::primitives::Bytes::from(calldata.0),
             ..Default::default()
 	};
 	let result = evm.transact_ref()?;
-	
-	// FIXME: why doesn't this work? the workaround is fine
-	//let decoded_output = abi.decode_output("attestSgx", &result.result.output().unwrap())?;
-	//dbg!(decoded_output);
-	
 	let decoded = ethabi::decode(&[ethabi::ParamType::Bytes], result.result.output().unwrap())?;
 	let quote = match &decoded[0] {
 	    Token::Bytes(b) => b,
@@ -105,5 +102,39 @@ fn simulate() -> eyre::Result<()> {
 	dbg!(hex);
     }
 
+    //////////////////////////
+    // Suave.volatileSet/Get
+    //////////////////////////
+    let mykey = "thirtytwobytesforantestingstring".as_bytes().to_vec();
+    let myval = "anotherthirtytwobytestringoftest".as_bytes().to_vec();
+    {
+	let calldata = abi.encode("volatileSet", (Token::FixedBytes(mykey.clone()),
+						  Token::FixedBytes(myval)))?;
+	evm.env.tx = TxEnv {
+            caller: addrA,
+            transact_to: revm::primitives::TransactTo::Call(addrB),
+	    data: revm::primitives::Bytes::from(calldata.0),
+            ..Default::default()
+	};
+	let result = evm.transact_ref()?;
+	//dbg!(result);
+    }
+    {
+	let calldata = abi.encode("volatileGet", (Token::FixedBytes(mykey),))?;
+	evm.env.tx = TxEnv {
+            caller: addrA,
+            transact_to: revm::primitives::TransactTo::Call(addrB),
+	    data: revm::primitives::Bytes::from(calldata.0),
+            ..Default::default()
+	};
+	let result = evm.transact_ref()?;
+	let decoded = ethabi::decode(&[ethabi::ParamType::FixedBytes(32)], result.result.output().unwrap())?;
+	let val = match &decoded[0] {
+	    Token::FixedBytes(b) => b,
+	    _ => todo!()
+	};
+	dbg!(std::str::from_utf8(val));
+    }
+    
     Ok(())
 }
