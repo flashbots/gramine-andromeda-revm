@@ -1,140 +1,98 @@
+pub use witness_revm::{ethers_block_to_helios, RemoteDB};
+
+use serde_json;
+
+use clap::Parser;
+
+use tokio::sync::{mpsc, watch};
+use tokio::task::spawn_blocking;
+
+use execution::rpc::http_rpc::HttpRpc;
+use execution::state::State;
+use execution::ExecutionClient;
+
+use revm::db::{CacheDB, Database, EmptyDB};
+
+use ethers::core::types::BlockNumber;
+use ethers::providers::{Http, Provider};
+use std::convert::TryFrom;
+
 use revm::{
-    primitives::{address, AccountInfo, TxEnv, Address, U256, Bytes, Bytecode, Output},
-    InMemoryDB, EVM,
+    primitives::{EVMError, ExecutionResult, TxEnv},
+    EVM,
 };
 
-use ethers_contract::{BaseContract, Lazy};
-use ethers_core::abi::{parse_abi,Token,ethabi};
-use std::{fs::File, io::Write, path::Path, fs, include_str};
-use std::str::FromStr;
+use ethers::utils as ethers_utils;
 
-
-
-fn main() -> eyre::Result<()> {
-    // Read from the untrusted host via a Gramine-mapped file
-    simulate()?;
-    Ok(())
+#[derive(Parser)]
+struct Cli {
+    /// The rpc endpoint to connect to
+    #[arg(short, long, default_value_t = String::from("http://127.0.0.1:8545"))]
+    rpc: String,
+    /// The transaction to execute (rlp? encoded)
+    tx_bytes: String,
 }
 
-pub static ANDROMEDA_CODE: Lazy<Bytes> = Lazy::new(|| {
-    include_str!("examples_Andromeda_sol_Andromeda.bin")
-	.parse().unwrap()});
+#[tokio::main]
+async fn main() {
+    let args = Cli::parse();
 
-pub static addrA : Address = address!("4838b106fce9647bdf1e7877bf73ce8b0bad5f97");    
-pub static addrB : Address = address!("F2d01Ee818509a9540d8324a5bA52329af27D19E");
+    let tx: TxEnv =
+        serde_json::from_str(args.tx_bytes.as_str()).expect("could not parse transaction");
 
-fn get_code() -> eyre::Result<Bytes> {
-    // This is gross, but I'm trying to remove the "constructor" from the bytecode
-    // generated from solc
-    let mut db = InMemoryDB::default();    
-    let mut evm = EVM::new();
-    let info = AccountInfo {
-	code: Some(Bytecode::new_raw((*ANDROMEDA_CODE.0).into())),
-        ..Default::default()
-    };
-    db.insert_account_info(addrB, info);
-    evm.database(db);
-    evm.env.tx = TxEnv {
-        caller: addrA,
-        transact_to: revm::primitives::TransactTo::Call(addrB),
-	data: revm::primitives::Bytes::from(ANDROMEDA_CODE.0.clone()),
-        ..Default::default()
-    };
-    let result = evm.transact_ref()?;
-    //dbg!(&result);
-    match result.result.output() {
-	Some(o) => Ok(o.clone()),
-	_ => {todo!()}
-    }
+    /* Fetch the latest block */
+    /* Alternatively the block could be passed in via command line */
+    let provider =
+        Provider::<Http>::try_from(args.rpc.clone()).expect("could not instantiate HTTP Provider");
+
+    let block = provider
+        .request(
+            "eth_getBlockByNumber",
+            [
+                ethers_utils::serialize(&false),
+                ethers_utils::serialize(&BlockNumber::Latest),
+            ],
+        )
+        .await
+        .expect("could not fetch latest block");
+
+    let (_block_tx, block_rx) = mpsc::channel(1);
+    let (finalized_block_tx, finalized_block_rx) = watch::channel(None);
+    let rpc_state_provider: ExecutionClient<HttpRpc> = ExecutionClient::new(
+        &args.rpc.clone(),
+        State::new(block_rx, finalized_block_rx, 1),
+    )
+    .unwrap();
+
+    let mut remote_db = RemoteDB::new(rpc_state_provider, CacheDB::new(EmptyDB::new()));
+    finalized_block_tx
+        .send(Some(
+            ethers_block_to_helios(block).expect("block malformed"),
+        ))
+        .expect("could not send current block");
+
+    let res = spawn_blocking(move || {
+        remote_db
+            .prefetch_from_revm_access_list(tx.access_list.clone())
+            .expect("failed to prefetch state from access list");
+        execute_tx(remote_db, tx)
+    })
+    .await
+    .expect("failed to start tx execution")
+    .expect("failed to execute transaction");
+
+    println!(
+        "{}",
+        serde_json::to_string(&res).expect("failed to serialize result")
+    );
 }
 
-fn simulate() -> eyre::Result<()> {
-    let mut db = InMemoryDB::default();
-
-    let code = get_code()?;
+fn execute_tx<DB: Database>(db: DB, tx: TxEnv) -> Result<ExecutionResult, EVMError<DB::Error>> {
     let mut evm = EVM::new();
-    let info = AccountInfo {
-	code: Some(Bytecode::new_raw(code)),
-        ..Default::default()
-    };
-    db.insert_account_info(addrB, info);
     evm.database(db);
-
-    let abi = BaseContract::from(parse_abi(&[
-        "function localRandom() returns (bytes32)",
-        "function attestSgx(bytes) returns (bytes)",
-        "function volatileSet(bytes32,bytes32)",
-        "function volatileGet(bytes32) returns (bytes32)",
-    ])?);
-
-    //////////////////////////
-    // Suave.localRandom()
-    //////////////////////////
-    {
-	let calldata = abi.encode("localRandom", ())?;
-	evm.env.tx = TxEnv {
-            caller: addrA,
-            transact_to: revm::primitives::TransactTo::Call(addrB),
-	    data: revm::primitives::Bytes::from(calldata.0),
-            ..Default::default()
-	};
-	let result = evm.transact_ref()?;
-	dbg!(&result.result.output());
+    evm.env.tx = tx;
+    match evm.transact() {
+        Ok(evm_res) => Ok(evm_res.result),
+        Err(err) => Err(err),
     }
-
-    //////////////////////////
-    // Suave.attestSgx("hello")
-    //////////////////////////
-    {
-	let calldata = abi.encode("attestSgx", (Token::Bytes("hello".as_bytes().to_vec()),))?;
-	evm.env.tx = TxEnv {
-            transact_to: revm::primitives::TransactTo::Call(addrB),
-	    data: revm::primitives::Bytes::from(calldata.0),
-            ..Default::default()
-	};
-	let result = evm.transact_ref()?;
-	let decoded = ethabi::decode(&[ethabi::ParamType::Bytes], result.result.output().unwrap())?;
-	let quote = match &decoded[0] {
-	    Token::Bytes(b) => b,
-	    _ => todo!()
-	};
-	let hex : String = quote.iter().map(|byte| format!("{:02x}", byte)).collect();
-	dbg!(hex);
-    }
-
-    //////////////////////////
-    // Suave.volatileSet/Get
-    //////////////////////////
-    let mykey = "thirtytwobytesforantestingstring".as_bytes().to_vec();
-    let myval = "anotherthirtytwobytestringoftest".as_bytes().to_vec();
-    {
-	let calldata = abi.encode("volatileSet", (Token::FixedBytes(mykey.clone()),
-						  Token::FixedBytes(myval)))?;
-	evm.env.tx = TxEnv {
-            caller: addrA,
-            transact_to: revm::primitives::TransactTo::Call(addrB),
-	    data: revm::primitives::Bytes::from(calldata.0),
-            ..Default::default()
-	};
-	let result = evm.transact_ref()?;
-	//dbg!(result);
-    }
-    {
-	let calldata = abi.encode("volatileGet", (Token::FixedBytes(mykey),))?;
-	evm.env.tx = TxEnv {
-            caller: addrA,
-            transact_to: revm::primitives::TransactTo::Call(addrB),
-	    data: revm::primitives::Bytes::from(calldata.0),
-            ..Default::default()
-	};
-	let result = evm.transact_ref()?;
-	let decoded = ethabi::decode(&[ethabi::ParamType::FixedBytes(32)], result.result.output().unwrap())?;
-	let val = match &decoded[0] {
-	    Token::FixedBytes(b) => b,
-	    _ => todo!()
-	};
-	dbg!(std::str::from_utf8(val));
-    }
-    
-    Ok(())
 }

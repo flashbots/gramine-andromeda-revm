@@ -20,22 +20,25 @@ fs.mounts = [
   # { path = "/var/sgx-revm-data/", uri = "file:data" },
 ]
 
+sys.insecure__allow_eventfd = true
+
 sgx.debug = false
 sgx.edmm_enable = {{ 'true' if env.get('EDMM', '0') == '1' else 'false' }}
 
 # Enabling remote attestation
-sgx.remote_attestation = "{{ ra_type }}"
-sgx.ra_client_spid = "{{ ra_client_spid }}"
-sgx.ra_client_linkable = {{ 'true' if ra_client_linkable == '1' else 'false' }}
+sgx.remote_attestation = "dcap"
 
 sgx.trusted_files = [
   "file:{{ gramine.libos }}",
   "file:{{ self_exe }}",
   "file:{{ gramine.runtimedir() }}/",
   "file:{{ arch_libdir }}/",
+  "file:/usr/{{ arch_libdir }}/",
+  "file:/etc/ssl/certs/ca-certificates.crt",
+  "file:/usr/lib/ssl/certs/",
 ]
 
 #sgx.allowed_files = [
 #]
 
-sgx.max_threads = 2
+sgx.max_threads = 10

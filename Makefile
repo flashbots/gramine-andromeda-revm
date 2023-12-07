@@ -1,6 +1,6 @@
 ARCH_LIBDIR ?= /lib/$(shell $(CC) -dumpmachine)
 
-SELF_EXE = target/release/sgx-revm
+SELF_EXE = target/release/gramine-sirrah
 
 .PHONY: all
 all: $(SELF_EXE) sgx-revm.manifest
@@ -19,21 +19,15 @@ endif
 # performance that makes testing by running a benchmark with ab painful. The primary goal
 # of the DEBUG setting is to control Gramine's loglevel.
 -include $(SELF_EXE).d # See also: .cargo/config.toml
-$(SELF_EXE): Cargo.toml 
+$(SELF_EXE): Cargo.toml src/main.rs
 	cargo build --release
 
-RA_TYPE ?= epid
-RA_CLIENT_SPID ?= 12345678901234567890123456789012
-RA_CLIENT_LINKABLE ?= 0
-
-sgx-revm.manifest: sgx-revm.manifest.template
+sgx-revm.manifest: sgx-revm.manifest.template $(SELF_EXE)
 	gramine-manifest \
 		-Dlog_level=$(GRAMINE_LOG_LEVEL) \
 		-Darch_libdir=$(ARCH_LIBDIR) \
 		-Dself_exe=$(SELF_EXE) \
-		-Dra_type=$(RA_TYPE) \
-		-Dra_client_spid=$(RA_CLIENT_SPID) \
-		-Dra_client_linkable=$(RA_CLIENT_LINKABLE) \
+		-Dra_type=dcap \
 		$< $@
 
 # Make on Ubuntu <= 20.04 doesn't support "Rules with Grouped Targets" (`&:`),
