@@ -45,7 +45,7 @@ sgx_sign: sgx-revm.manifest $(SELF_EXE)
 ifeq ($(SGX),)
 GRAMINE = gramine-direct
 else
-GRAMINE = sudo gramine-sgx
+GRAMINE = gramine-sgx
 endif
 
 .PHONY: start-gramine-server
