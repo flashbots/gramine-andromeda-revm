@@ -1,6 +1,6 @@
 FROM gramineproject/gramine:v1.5
 
-RUN apt-get update && apt-get install -y jq build-essential libclang-dev openssh-client git
+RUN apt-get update && apt-get install -y jq build-essential libclang-dev
 
 WORKDIR /workdir
 
@@ -13,15 +13,16 @@ RUN gramine-sgx-gen-private-key
 # Build just the dependencies (shorcut)
 COPY Cargo.lock Cargo.toml ./
 RUN mkdir src && touch src/lib.rs
-RUN --mount=type=ssh cargo build --release
+RUN --mount=type=ssh  cargo build --release
 RUN rm src/lib.rs
 
 # Now add our actual source
 COPY Makefile README.md sgx-revm.manifest.template ./
 COPY src/main.rs ./src/
+COPY src/examples_Andromeda_sol_Andromeda.bin ./src/
 
 # Build with rust
-RUN --mount=type=ssh cargo build --release
+RUN cargo build --release
 
 # Make and sign the gramine manifest
 RUN make SGX=1 RA_TYPE=dcap
