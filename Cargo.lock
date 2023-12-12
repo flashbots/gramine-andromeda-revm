@@ -2338,6 +2338,7 @@ dependencies = [
  "execution",
  "eyre",
  "futures",
+ "helios",
  "revm 3.5.0",
  "serde",
  "serde_json",
@@ -6067,7 +6068,6 @@ dependencies = [
 [[package]]
 name = "witness-revm"
 version = "0.1.0"
-source = "git+ssh://git@github.com/flashbots/witness-revm.git#819078f2bd1a7bdbaa4984899f172c8c43aeeb24"
 dependencies = [
  "async-std",
  "clap",
