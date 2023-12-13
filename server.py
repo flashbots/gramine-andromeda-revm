@@ -26,9 +26,11 @@ def server(host='0.0.0.0', port=5556):
                 proc.stdin.write(line.encode()+b'\n')
                 proc.stdin.flush()
                 try:
-                    result = proc.stdout.readline().strip()
-                    print('send:', result.decode('utf-8'))
-                    conn.sendall(result+b'\n')
+                    while True:
+                        result = proc.stdout.readline().strip()
+                        print('send:', result.decode('utf-8'))
+                        conn.sendall(result+b'\n')
+                        if not result.startswith(b'{"depth"'): break
                 except Exception as e:
                     print(e)
                     break
