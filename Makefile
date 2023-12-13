@@ -19,6 +19,7 @@ endif
 # performance that makes testing by running a benchmark with ab painful. The primary goal
 # of the DEBUG setting is to control Gramine's loglevel.
 -include $(SELF_EXE).d # See also: .cargo/config.toml
+.PHONY: $(SELF_EXE)
 $(SELF_EXE): Cargo.toml src/main.rs
 	cargo build --release
 

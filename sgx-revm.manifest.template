@@ -41,4 +41,4 @@ sgx.trusted_files = [
 #sgx.allowed_files = [
 #]
 
-sgx.max_threads = 10
+sgx.max_threads = 96
