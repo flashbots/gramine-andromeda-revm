@@ -6319,7 +6319,7 @@ dependencies = [
 [[package]]
 name = "witness-revm"
 version = "0.1.0"
-source = "git+ssh://git@github.com/flashbots/witness-revm.git?branch=master#d711e0129ff6a1920a17055339ca2956f2823823"
+source = "git+ssh://git@github.com/flashbots/witness-revm.git?branch=master#bcbdd1936ac23b737ba2eb595dc6f7b3fab9f89e"
 dependencies = [
  "async-std",
  "clap",
