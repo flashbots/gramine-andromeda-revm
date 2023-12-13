@@ -23,3 +23,7 @@ serde_json = "1.0.105"
 
 ethers-core = { version = "2.0.11" }
 ethers-contract = { version = "2.0.11", default-features = false }
+
+[patch."https://github.com/bluealloy/revm"]
+revm = { git = "ssh://git@github.com/flashbots/revm-andromeda.git", branch = "attest" }
+revm-primitives = { git = "ssh://git@github.com/flashbots/revm-andromeda.git", branch = "attest" }
