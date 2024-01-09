@@ -37,4 +37,7 @@ def server(host='0.0.0.0', port=5556):
                     break
 
 if __name__ == '__main__':
-    server()
+    if len(sys.argv) == 2:
+        server(port=int(sys.argv[1]))
+    else:
+        server()
