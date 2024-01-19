@@ -9,8 +9,8 @@ edition = "2021"
 tokio = "1.34.0"
 async-std = "1" # = { version = "1", features = ["attributes", "tokio1"] }
 futures = "0.3"
-revm = { git = "ssh://git@github.com/flashbots/revm-andromeda.git", branch = "attest", features = ["serde"] }
-witness-revm = { git = "ssh://git@github.com/flashbots/witness-revm.git", branch = "master" }
+revm = { git = "ssh://git@github.com/flashbots/revm.git", branch = "extensible-precompiles", features = ["serde"] }
+suave-andromeda-revm = { git = "ssh://git@github.com/flashbots/suave-andromeda-revm.git", branch = "main" }
 clap = { version = "4.4.11", features = ["derive"] }
 
 # Misc
@@ -22,5 +22,5 @@ ethers-core = { version = "2.0.11" }
 ethers-contract = { version = "2.0.11", default-features = false }
 
 [patch."https://github.com/bluealloy/revm"]
-revm = { git = "ssh://git@github.com/flashbots/revm-andromeda.git", branch = "attest" }
-revm-primitives = { git = "ssh://git@github.com/flashbots/revm-andromeda.git", branch = "attest" }
+revm = { git = "ssh://git@github.com/flashbots/revm.git", branch = "extensible-precompiles" }
+revm-primitives = { git = "ssh://git@github.com/flashbots/revm.git", branch = "extensible-precompiles" }
