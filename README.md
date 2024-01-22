@@ -18,6 +18,7 @@ Running outside of an enclave, we can still simulate this. For example `/dev/ura
 TODO: mock out `/dev/attestation/quote` or provide alternative
 
 ```shell
+git submodule update --init # temporary until repositories are public, fetch the private dependencies
 cargo build
 cargo run
 ```
@@ -25,8 +26,8 @@ cargo run
 ## Replicate build using Docker (no SGX Required)
 To build and print the MRENCLAVE:
 ```shell
-docker build . --tag revm
-docker run -t revm
+docker build . --tag gramine-andromeda-revm
+docker run -t gramine-andromeda-revm
 ```
 
 ## How to replicate the execution on an SGX-enabled environment (still using Docker)
@@ -34,5 +35,5 @@ docker run -t revm
 ```shell
 docker run -it --device /dev/sgx_enclave \
        -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-       revm "gramine-sgx ./sgx-revm"
+       gramine-andromeda-revm "gramine-sgx ./sgx-revm"
 ```
