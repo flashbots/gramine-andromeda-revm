@@ -8,6 +8,9 @@ ifeq ($(SGX),1)
 all: sgx-revm.manifest.sgx sgx-revm.sig
 endif
 
+.PHONY: all-docker
+all-docker: docker build --output=. --target=binaries .
+
 ifeq ($(DEBUG),1)
 GRAMINE_LOG_LEVEL = debug
 else
