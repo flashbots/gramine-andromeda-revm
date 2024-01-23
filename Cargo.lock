@@ -2410,7 +2410,6 @@ dependencies = [
  "ethers-core",
  "eyre",
  "futures",
- "revm 3.5.0",
  "serde",
  "serde_json",
  "suave-andromeda-revm",

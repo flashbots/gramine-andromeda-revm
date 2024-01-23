@@ -26,9 +26,18 @@ cargo run
 ## Replicate build using Docker (no SGX Required)
 To build and print the MRENCLAVE:
 ```shell
-docker build . --tag gramine-andromeda-revm
+docker build --tag gramine-andromeda-revm --target sgx
 docker run -t gramine-andromeda-revm
 ```
+
+## Extract reproducible binaries built using docker
+
+```shell
+docker build --output=. --target=binaries .
+```
+Alternatively, run `make all-docker` which does the same.
+
+This will output sgx-revm.sig, sgx-revm.manifest, sgx-revm.manifest.sgx into the main directory, and gramine-sirrah into target/release directory. Continue as if you just ran `SGX=1 make all`.
 
 ## How to replicate the execution on an SGX-enabled environment (still using Docker)
 
