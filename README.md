@@ -1,3 +1,6 @@
+> [!WARNING]
+> This repository is a work in progress, and for now only functions as a showcase. This code *is not intended to secure any valuable information*.
+
 # Andromeda MEVM in Gramine
 
 This is a gramine environment for running Andromeda REVM (github.com/flashbots/revm-andromeda) in a TEE.
@@ -46,3 +49,7 @@ docker run -it --device /dev/sgx_enclave \
        -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
        gramine-andromeda-revm "gramine-sgx ./sgx-revm"
 ```
+
+## License
+
+The code in this project is free software under the [MIT license](LICENSE).
