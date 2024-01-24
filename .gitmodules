@@ -1,8 +1,0 @@
-[submodule "external/revm"]
-	path = external/revm
-	url = ssh://git@github.com/flashbots/revm.git
-[submodule "revm"]
-	branch = extensible-precompiles
-[submodule "external/suave-andromeda-revm"]
-	path = external/suave-andromeda-revm
-	url = ssh://git@github.com/flashbots/suave-andromeda-revm.git

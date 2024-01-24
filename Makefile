@@ -9,7 +9,13 @@ all: sgx-revm.manifest.sgx sgx-revm.sig
 endif
 
 .PHONY: all-docker
-all-docker: docker build --output=. --target=binaries .
+all-docker:
+	docker build --output=. --target=binaries .
+
+.PHONY: docker
+docker:
+	docker build --target=sgx --tag gramine-andromeda-revm .
+	docker run --rm gramine-andromeda-revm
 
 ifeq ($(DEBUG),1)
 GRAMINE_LOG_LEVEL = debug
