@@ -3,22 +3,20 @@
 
 # Andromeda MEVM in Gramine
 
-This is a gramine environment for running Andromeda REVM (github.com/flashbots/revm-andromeda) in a TEE.
+This is a gramine environment for running [Andromeda REVM](github.com/flashbots/suave-andromeda-revm) in a TEE.
 
-The example file so far just outputs a test execution, demoing the `Suave.localRandom` precompile.
+The TEE service (gramine-sirrah) uses stdin and stdout for passing data in and out of the REVM, which currently supports two commands:
+* `advance [height]`, which advances the suave chain to requested height (or to latest if no height provided)
+* `execute tx_data`, which executes the requested data. For data format see [Andromeda REVM](github.com/flashbots/suave-andromeda-revm).
 
-TODO: 
-- Interface to untrusted host. What we should do is accept commands (`provideBlock`, `ethCall`) on `stdin`... providing call results on `stdout`.
-   - The `provideBlock` would be for advancing the light client forward
-   - `ethCall` would be for invoking an offchain confidential query. We can either require this info passed in ahead of time, or request it on demand through `stdin`/`stdout`.
-- Import light client. The enclave should only advance forward on validated claims. The enclave should only execute evm in valid contexts.
+The TEE service is stateless, so make sure that you have `suave-geth` running. TEE will connect to `http://localhost:8545` by default, which you can override by passing `--rpc` flag. The RPC is used for fetching chain data along with their proofs.
+
+We also provide a simple http and tpc [server](server.py) for handling requests to and from the TEE service, for example usage see [andromeda-sirrah-contracts](github.com/flashbots/andromeda-sirrah-contracts).
 
 ## Run locally
 
-The Andromeda `revm-andromeda` relies on gramine features for the precompiles, specifically `/dev/attestation/quote` and `/dev/urandom/`.
-Running outside of an enclave, we can still simulate this. For example `/dev/urandom` works anyway. The other Andromeda precompiles, `volatile{Get/Set}` are directly managed in-memory by `revm-andromeda`. 
-
-TODO: mock out `/dev/attestation/quote` or provide alternative
+The Andromeda `revm-andromeda` relies on gramine features for the precompiles, specifically `/dev/attestation/quote` and `/dev/urandom/`.  
+Running outside of an enclave, we can still simulate this. For example `/dev/urandom` works anyway. The other Andromeda precompiles, `volatile{Get/Set}` are directly managed in-memory by `suave-andromeda-revm`. 
 
 ```shell
 git submodule update --init # temporary until repositories are public, fetch the private dependencies
@@ -40,7 +38,7 @@ docker build --output=. --target=binaries .
 ```
 Alternatively, run `make all-docker` which does the same.
 
-This will output sgx-revm.sig, sgx-revm.manifest, sgx-revm.manifest.sgx into the main directory, and gramine-sirrah into target/release directory. Continue as if you just ran `SGX=1 make all`.
+This will output sgx-revm.sig, sgx-revm.manifest, sgx-revm.manifest.sgx into the main directory, and gramine-sirrah into target/release directory. Continue as if you just ran `SGX=1 make all`. Since we are outputing the binaries, you might encounter errors if you are not using the same OS as the docker target (ubuntu 22.04).
 
 ## How to replicate the execution on an SGX-enabled environment (still using Docker)
 
