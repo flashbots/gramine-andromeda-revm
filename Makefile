@@ -8,13 +8,13 @@ ifeq ($(SGX),1)
 all: sgx-revm.manifest.sgx sgx-revm.sig
 endif
 
-.PHONY: all-docker
+.PHONY: docker-binaries
 all-docker:
-	docker build --output=. --target=binaries .
+	docker build --output=. -f binaries.Dockerfile .
 
 .PHONY: docker
 docker:
-	docker build --target=sgx --tag gramine-andromeda-revm .
+	docker build --tag gramine-andromeda-revm .
 	docker run --rm gramine-andromeda-revm
 
 ifeq ($(DEBUG),1)
