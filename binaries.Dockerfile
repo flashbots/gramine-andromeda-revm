@@ -1,4 +1,5 @@
-FROM ruteri/gramine-andromeda-revm:latest as builder # Temporary, will be flashbots once tested
+# Temporary, will be flashbots once tested
+FROM ruteri/gramine-andromeda-revm:latest as builder
 
 FROM scratch as binaries
 
