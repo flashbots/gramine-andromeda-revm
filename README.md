@@ -13,6 +13,13 @@ The TEE service is stateless, so make sure that you have `suave-geth` running. T
 
 We also provide a simple http and tpc [server](server.py) for handling requests to and from the TEE service, for example usage see [andromeda-sirrah-contracts](github.com/flashbots/andromeda-sirrah-contracts).
 
+## Current measurement
+
+```
+mr_signer: f0365ce7081fda379914c703fe08648db1cce3747e8c10f74ff742926399f15a
+mr_enclave: 2c2facadbb86dfc9989f28b09ca142e3447ad682e00384d2f4611cf690dbab61
+```
+
 ## Run locally
 
 The Andromeda `revm-andromeda` relies on gramine features for the precompiles, specifically `/dev/attestation/quote` and `/dev/urandom/`.  
@@ -27,18 +34,18 @@ cargo run
 ## Replicate build using Docker (no SGX Required)
 To build and print the MRENCLAVE:
 ```shell
-docker build --tag gramine-andromeda-revm --target sgx
-docker run -t gramine-andromeda-revm
+docker build --tag gramine-andromeda-revm .
+docker run --rm gramine-andromeda-revm
 ```
 
 ## Extract reproducible binaries built using docker
 
 ```shell
-docker build --output=. --target=binaries .
+docker build --output=. -f=binaries.Dockerfile .
 ```
-Alternatively, run `make all-docker` which does the same.
+Alternatively, run `make docker-binaries` which does the same. Note that the binaries will be pulled from dockerhub as opposed to local image. This ensures the MRSIGNER is matching.  
 
-This will output sgx-revm.sig, sgx-revm.manifest, sgx-revm.manifest.sgx into the main directory, and gramine-sirrah into target/release directory. Continue as if you just ran `SGX=1 make all`. Since we are outputing the binaries, you might encounter errors if you are not using the same OS as the docker target (ubuntu 22.04).
+The above will output sgx-revm.sig, sgx-revm.manifest, sgx-revm.manifest.sgx into the main directory, and gramine-sirrah into target/release directory. Continue as if you just ran `SGX=1 make all`. Since we are outputing the binaries, you might encounter errors if you are not using the same OS as the docker target (ubuntu 22.04).
 
 ## How to replicate the execution on an SGX-enabled environment (still using Docker)
 

@@ -1,4 +1,4 @@
-FROM gramineproject/gramine:1.6-jammy as sgx
+FROM gramineproject/gramine:1.6-jammy as builder
 
 RUN apt-get update && apt-get install -y jq build-essential libclang-dev
 
@@ -30,9 +30,11 @@ RUN make SGX=1 RA_TYPE=dcap
 
 CMD [ "gramine-sgx-sigstruct-view sgx-revm.sig" ]
 
-FROM scratch as binaries
+FROM gramineproject/gramine:1.6-jammy as runner
 
-COPY --from=sgx /workdir/sgx-revm.sig /
-COPY --from=sgx /workdir/sgx-revm.manifest /
-COPY --from=sgx /workdir/sgx-revm.manifest.sgx /
-COPY --from=sgx /workdir/target/release/gramine-sirrah /target/release/
+COPY --from=builder /workdir/sgx-revm.sig /
+COPY --from=builder /workdir/sgx-revm.manifest /
+COPY --from=builder /workdir/sgx-revm.manifest.sgx /
+COPY --from=builder /workdir/target/release/gramine-sirrah /target/release/
+
+CMD [ "gramine-sgx-sigstruct-view sgx-revm.sig" ]
