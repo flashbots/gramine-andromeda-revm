@@ -9,7 +9,7 @@ all: sgx-revm.manifest.sgx sgx-revm.sig
 endif
 
 .PHONY: docker-binaries
-all-docker:
+docker-binaries:
 	docker build --output=. -f binaries.Dockerfile .
 
 .PHONY: docker

@@ -2,7 +2,7 @@ FROM ruteri/gramine-andromeda-revm:latest as builder # Temporary, will be flashb
 
 FROM scratch as binaries
 
-COPY --from=builder /workdir/sgx-revm.sig /
-COPY --from=builder /workdir/sgx-revm.manifest /
-COPY --from=builder /workdir/sgx-revm.manifest.sgx /
-COPY --from=builder /workdir/target/release/gramine-sirrah /target/release/
+COPY --from=builder /sgx-revm.sig /
+COPY --from=builder /sgx-revm.manifest /
+COPY --from=builder /sgx-revm.manifest.sgx /
+COPY --from=builder /target/release/gramine-sirrah /target/release/
