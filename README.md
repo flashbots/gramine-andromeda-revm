@@ -17,7 +17,7 @@ We also provide a simple http and tpc [server](server.py) for handling requests 
 
 ```
 mr_signer: f0365ce7081fda379914c703fe08648db1cce3747e8c10f74ff742926399f15a
-mr_enclave: 2c2facadbb86dfc9989f28b09ca142e3447ad682e00384d2f4611cf690dbab61
+mr_enclave: a9956056f8f39fffbe148eeb0285be7dc8a9034fd393d5f62a7b058c6ad5e82b
 ```
 
 ## Run locally
