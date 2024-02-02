@@ -10,15 +10,7 @@ use openssl::hash::MessageDigest;
 use openssl::stack::Stack;
 use acme_lib::Result;
 
-
-#[derive(Parser)]
-struct Cli {
-    /// The rpc endpoint to connect to
-    #[arg(short, long, default_value_t = String::from("http://127.0.0.1:8545"))]
-    rpc: String,
-    #[arg(short, long, default_value_t = false)]
-    trace: bool,
-}
+use rouille::{Request,Response,Server};
 
 pub fn create_csr(pkey: &PKey<pkey::Private>) -> Result<X509Req> {
     //
@@ -57,6 +49,15 @@ pub fn create_csr(pkey: &PKey<pkey::Private>) -> Result<X509Req> {
     Ok(req_bld.build())
 }
 
+#[derive(Parser)]
+struct Cli {
+    /// The rpc endpoint to connect to
+    #[arg(short, long, default_value_t = String::from("http://127.0.0.1:8545"))]
+    rpc: String,
+    #[arg(short, long, default_value_t = false)]
+    trace: bool,
+}
+
 #[tokio::main]
 async fn main() {
     let cli_args = Cli::parse();
@@ -64,11 +65,27 @@ async fn main() {
 
     let pkey = create_rsa_key(2048);
     let csr = create_csr(&pkey);
-
-    
-
     println!("{}", String::from_utf8(pkey.rsa().unwrap().private_key_to_pem().unwrap()).unwrap());
     println!("{}", String::from_utf8(csr.unwrap().to_pem().unwrap()).unwrap());
+
+    Server::new_ssl("0.0.0.0:5001",
+		    move |request| {
+/*
+			service
+			    .execute_command(command, cli_args.trace)
+			    .match
+			{
+			    Ok(res) => println!("{:?}", res),
+			    Err(e) => println!("{:?}", e),
+			}
+*/			
+			Response::text("hello world")
+		    },
+		    include_bytes!("../ssl-cert.pem").to_vec(),
+		    include_bytes!("../ssl-key.pem").to_vec(),
+    )
+	.expect("Failed to start server")
+        .run();    
     
     /*
     Usage plan:

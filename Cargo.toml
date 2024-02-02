@@ -23,6 +23,7 @@ ethers-core = { version = "2.0.11" }
 ethers-contract = { version = "2.0.11", default-features = false }
 acme-lib = "0.9.1"
 openssl = "0.10.63"
+rouille = { version = "3.6.2", features = ["ssl"] }
 
 [patch."https://github.com/bluealloy/revm"]
 revm = { git = "https://github.com/flashbots/revm.git", branch = "extensible-precompiles" }
