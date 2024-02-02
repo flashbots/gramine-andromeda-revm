@@ -13,6 +13,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "acme-lib"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6bcfe879d8669cfe09f2dd1bef4dc8cb232ca7b9ce46f4621cda9e7cc729cf73"
+dependencies = [
+ "base64 0.21.5",
+ "lazy_static",
+ "log",
+ "openssl",
+ "serde",
+ "serde_json",
+ "time 0.1.45",
+ "ureq",
+]
+
+[[package]]
 name = "addr2line"
 version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2404,12 +2420,14 @@ dependencies = [
 name = "gramine-sirrah"
 version = "0.1.0"
 dependencies = [
+ "acme-lib",
  "async-std",
  "clap",
  "ethers-contract",
  "ethers-core",
  "eyre",
  "futures",
+ "openssl",
  "serde",
  "serde_json",
  "suave-andromeda-revm",
@@ -3527,9 +3545,9 @@ dependencies = [
 
 [[package]]
 name = "openssl"
-version = "0.10.61"
+version = "0.10.63"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b8419dc8cc6d866deb801274bba2e6f8f6108c1bb7fcc10ee5ab864931dbb45"
+checksum = "15c9d69dd87a29568d4d017cfe8ec518706046a05184e5aea92d0af890b803c8"
 dependencies = [
  "bitflags 2.4.1",
  "cfg-if",
@@ -3568,9 +3586,9 @@ dependencies = [
 
 [[package]]
 name = "openssl-sys"
-version = "0.9.97"
+version = "0.9.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c3eaad34cdd97d81de97964fc7f29e2d104f483840d906ef56daa1912338460b"
+checksum = "22e1bf214306098e4832460f797824c05d25aacdf896f64a985fb0fd992454ae"
 dependencies = [
  "cc",
  "libc",
@@ -5021,7 +5039,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with_macros",
- "time",
+ "time 0.3.30",
 ]
 
 [[package]]
@@ -5132,7 +5150,7 @@ dependencies = [
  "num-bigint",
  "num-traits",
  "thiserror",
- "time",
+ "time 0.3.30",
 ]
 
 [[package]]
@@ -5333,7 +5351,7 @@ dependencies = [
 [[package]]
 name = "suave-andromeda-revm"
 version = "0.1.0"
-source = "git+https://github.com/flashbots/suave-andromeda-revm.git?branch=main#851ef6081c534342b0dee274bcd07371f96a39aa"
+source = "git+https://github.com/flashbots/suave-andromeda-revm.git?branch=main#ddc18fb60b6e377d1dbc2e16c9c062707de002f7"
 dependencies = [
  "async-std",
  "clap",
@@ -5519,6 +5537,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d050e60b33d41c19108b32cea32164033a9013fe3b46cbd4457559bfbf77afaa"
 dependencies = [
  "num_cpus",
+]
+
+[[package]]
+name = "time"
+version = "0.1.45"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b797afad3f312d1c66a56d11d0316f916356d11bd158fbc6ca6389ff6bf805a"
+dependencies = [
+ "libc",
+ "wasi 0.10.0+wasi-snapshot-preview1",
+ "winapi",
 ]
 
 [[package]]
@@ -5933,6 +5962,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
+name = "ureq"
+version = "2.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f8cdd25c339e200129fe4de81451814e5228c9b771d57378817d6117cc2b3f97"
+dependencies = [
+ "base64 0.21.5",
+ "flate2",
+ "log",
+ "once_cell",
+ "rustls 0.21.10",
+ "rustls-webpki",
+ "url",
+ "webpki-roots 0.25.3",
+]
+
+[[package]]
 name = "url"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6028,6 +6073,12 @@ name = "wasi"
 version = "0.9.0+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cccddf32554fecc6acb585f82a32a72e28b48f8c4c1883ddfeeeaa96f7d8e519"
+
+[[package]]
+name = "wasi"
+version = "0.10.0+wasi-snapshot-preview1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a143597ca7c7793eff794def352d41792a93c481eb1042423ff7ff72ba2c31f"
 
 [[package]]
 name = "wasi"
@@ -6450,7 +6501,7 @@ dependencies = [
  "hmac",
  "pbkdf2 0.11.0",
  "sha1",
- "time",
+ "time 0.3.30",
  "zstd 0.11.2+zstd.1.5.2",
 ]
 

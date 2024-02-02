@@ -13,7 +13,7 @@ RUN gramine-sgx-gen-private-key
 # Build just the dependencies (shorcut)
 COPY Cargo.lock Cargo.toml ./
 RUN mkdir src && touch src/lib.rs
-COPY external ./external/
+
 
 RUN cargo build --release
 RUN rm src/lib.rs
