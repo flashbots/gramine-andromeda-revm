@@ -46,6 +46,8 @@ Alternatively, run `make docker-binaries` which does the same. Note that the bin
 
 The above will output sgx-revm.sig, sgx-revm.manifest, sgx-revm.manifest.sgx into the main directory, and gramine-sirrah into target/release directory. Continue as if you just ran `SGX=1 make all`. Since we are outputing the binaries, you might encounter errors if you are not using the same OS as the docker target (ubuntu 22.04).
 
+For now we are still checking the `mr_signer`, if you want to connect to one of the predeployed Andromeda contracts without configuring your `mr_signer` you can pull binaries from `ruteri/gramine-andromeda-revm:latest`.
+
 ## How to replicate the execution on an SGX-enabled environment (still using Docker)
 
 ```shell
