@@ -8,14 +8,14 @@ ifeq ($(SGX),1)
 all: sgx-revm.manifest.sgx sgx-revm.sig
 endif
 
-.PHONY: docker-binaries
-docker-binaries:
-	docker build --output=. -f binaries.Dockerfile .
-
 .PHONY: docker
 docker:
 	docker build --tag gramine-andromeda-revm .
 	docker run --rm gramine-andromeda-revm
+
+.PHONY: docker-binaries
+docker-binaries: docker
+	docker build --output=. -f binaries.Dockerfile .
 
 ifeq ($(DEBUG),1)
 GRAMINE_LOG_LEVEL = debug

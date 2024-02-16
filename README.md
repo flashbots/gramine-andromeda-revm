@@ -26,7 +26,6 @@ The Andromeda `revm-andromeda` relies on gramine features for the precompiles, s
 Running outside of an enclave, we can still simulate this. For example `/dev/urandom` works anyway. The other Andromeda precompiles, `volatile{Get/Set}` are directly managed in-memory by `suave-andromeda-revm`. 
 
 ```shell
-git submodule update --init # temporary until repositories are public, fetch the private dependencies
 cargo build
 cargo run
 ```
