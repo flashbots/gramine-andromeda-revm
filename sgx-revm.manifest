@@ -1,0 +1,49 @@
+[loader]
+entrypoint = "file:/usr/lib/x86_64-linux-gnu/gramine/libsysdb.so"
+log_level = "error"
+
+[loader.env]
+LD_LIBRARY_PATH = "/lib:/lib/x86_64-linux-gnu"
+MALLOC_ARENA_MAX = "1"
+RUST_BACKTRACE = "full"
+
+[libos]
+entrypoint = "target/release/gramine-sirrah"
+
+[fs]
+mounts = [
+    { path = "/lib", uri = "file:/usr/lib/x86_64-linux-gnu/gramine/runtime/glibc" },
+    { path = "/lib/x86_64-linux-gnu", uri = "file:/lib/x86_64-linux-gnu" },
+    { path = "/etc", uri = "file:/etc" },
+]
+
+[sys]
+insecure__allow_eventfd = true
+enable_extra_runtime_domain_names_conf = true
+
+[sgx]
+debug = false
+edmm_enable = false
+remote_attestation = "dcap"
+trusted_files = [
+    { uri = "file:/usr/lib/x86_64-linux-gnu/gramine/libsysdb.so" },
+    { uri = "file:target/release/gramine-sirrah" },
+    { uri = "file:/usr/lib/x86_64-linux-gnu/gramine/runtime/glibc/" },
+    { uri = "file:/lib/x86_64-linux-gnu/" },
+    { uri = "file:/usr//lib/x86_64-linux-gnu/" },
+    { uri = "file:/etc/ssl/certs/ca-certificates.crt" },
+    { uri = "file:/usr/lib/ssl/certs/" },
+]
+max_threads = 96
+isvprodid = 0
+isvsvn = 0
+enable_stats = false
+enclave_size = "256M"
+use_exinfo = false
+
+[sgx.cpu_features]
+avx = "unspecified"
+avx512 = "unspecified"
+amx = "unspecified"
+mpx = "disabled"
+pkru = "disabled"
