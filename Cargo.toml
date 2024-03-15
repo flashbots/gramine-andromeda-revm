@@ -9,7 +9,7 @@ edition = "2021"
 tokio = "1.34.0"
 async-std = "1" # = { version = "1", features = ["attributes", "tokio1"] }
 futures = "0.3"
-suave-andromeda-revm = { path="/home/ubuntu/suave-andromeda-revm" }
+suave-andromeda-revm = { git = "https://github.com/flashbots/suave-andromeda-revm.git", branch = "httpcall" }
 clap = { version = "4.4.11", features = ["derive"] }
 
 # Misc
