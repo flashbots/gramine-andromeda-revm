@@ -3,7 +3,6 @@
 loader.entrypoint = "file:{{ gramine.libos }}"
 libos.entrypoint = "{{ self_exe }}"
 loader.log_level = "{{ log_level }}"
-
 loader.env.LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}"
 
 # See https://gramine.readthedocs.io/en/stable/performance.html#glibc-malloc-tuning
@@ -15,7 +14,7 @@ loader.env.RUST_BACKTRACE = "full"
 fs.mounts = [
   { path = "/lib", uri = "file:{{ gramine.runtimedir() }}" },
   { path = "{{ arch_libdir }}", uri = "file:{{ arch_libdir }}" },
-
+  { path = "/etc", uri = "file:/etc" },
   # For providing input through trusted or host-provided input files
   # { path = "/var/sgx-revm-data/", uri = "file:data" },
 ]
@@ -27,6 +26,9 @@ sgx.edmm_enable = {{ 'true' if env.get('EDMM', '0') == '1' else 'false' }}
 
 # Enabling remote attestation
 sgx.remote_attestation = "dcap"
+
+sys.enable_extra_runtime_domain_names_conf = true
+
 
 sgx.trusted_files = [
   "file:{{ gramine.libos }}",
