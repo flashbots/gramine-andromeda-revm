@@ -5444,7 +5444,7 @@ dependencies = [
 [[package]]
 name = "suave-andromeda-revm"
 version = "0.1.0"
-source = "git+https://github.com/flashbots/suave-andromeda-revm.git?branch=main#e199961bcf780e13fc56c0329ef5de51c77cfb19"
+source = "git+https://github.com/flashbots/suave-andromeda-revm.git?branch=main#4a47c013902d5a3ed337eb5876689966adf5bbcb"
 dependencies = [
  "async-std",
  "clap",
