@@ -50,8 +50,11 @@ def http_server():
         full_result = ""
         while True:
             result = proc.stdout.readline().strip()
+            if result.startswith(b'{"depth"'): 
+                print(result)
+                continue
             full_result += result.decode('utf-8') + "\n"
-            if not result.startswith(b'{"depth"'): break
+            break
         print("send:", full_result)
         response = make_response(full_result, 200)
         response.mimetype = "text/plain"
